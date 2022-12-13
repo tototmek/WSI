@@ -66,6 +66,7 @@ class MLP:
                 deltas.append([outputs[i][j] - targets[j] for j in range(len(outputs[i]))])
             else:
                 deltas.append([sum([deltas[-1][k] * self.weights[i][k][j] for k in range(len(deltas[-1]))]) * self.d_activation_dt(outputs[i][j]) for j in range(len(outputs[i]))])
+
         deltas.reverse()
         for i in range(self.n_hidden + 1):
             for j in range(len(self.weights[i])):
