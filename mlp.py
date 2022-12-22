@@ -1,5 +1,6 @@
 from math import exp
 import random
+import numpy as np
 
 def sigmoid(x):
     return 1 / (1 + exp(-x))
@@ -75,6 +76,9 @@ class MLP:
                 self.biases[i][j] -= learning_rate * deltas[i][j]
     
     def fit(self, X, y, epochs, learning_rate):
+        self.weights = []
+        self.biases = []
+        self._init()
         for _ in range(epochs):
             for i in range(len(X)):
                 outputs = self.forward(X[i])
@@ -82,7 +86,23 @@ class MLP:
     
     def predict(self, X):
         return [self.forward(x)[-1] for x in X]
+    
+    def cross_validate(self, folds, X, y, epochs, learning_rate):
+        fold_size = len(X) // folds
+        scores = []
+        X = list(X)
+        y = list(y)
+        for i in range(folds):
+            X_train = X[:i * fold_size] + X[(i + 1) * fold_size:]
+            y_train = y[:i * fold_size] + y[(i + 1) * fold_size:]
+            X_test = X[i * fold_size:(i + 1) * fold_size]
+            y_test = y[i * fold_size:(i + 1) * fold_size]
+            self.fit(X_train, y_train, epochs, learning_rate)
+            y_pred = self.predict(X_test)
+            scores.append(accuracy(np.argmax(y_test, axis=1), np.argmax(y_pred, axis=1)))
+        return scores
             
+
 
 def accuracy(y_target, y_pred):
     assert len(y_target) == len(y_pred)
