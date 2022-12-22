@@ -83,3 +83,11 @@ class MLP:
     def predict(self, X):
         return [self.forward(x)[-1] for x in X]
             
+
+def accuracy(y_target, y_pred):
+    assert len(y_target) == len(y_pred)
+    score = 0
+    for i, y in enumerate(y_target):
+        if y == y_pred[i]:
+            score += 1
+    return score / len(y_target)
