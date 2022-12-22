@@ -90,6 +90,7 @@ class MLP:
                 X_val, y_val = validation_data
                 y_pred = self.predict(X_val)
                 history["val"].append(accuracy(np.argmax(y_val, axis=1), np.argmax(y_pred, axis=1)))
+        return history
     
     def predict(self, X):
         return [self.forward(x)[-1] for x in X]
