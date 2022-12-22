@@ -75,14 +75,21 @@ class MLP:
                     self.weights[i][j][k] -= learning_rate * deltas[i][j] * outputs[i][k]
                 self.biases[i][j] -= learning_rate * deltas[i][j]
     
-    def fit(self, X, y, epochs, learning_rate):
+    def fit(self, X, y, epochs, learning_rate, validation_data=None):
         self.weights = []
         self.biases = []
+        history = {"train": [], "val": []}
         self._init()
         for _ in range(epochs):
             for i in range(len(X)):
                 outputs = self.forward(X[i])
                 self.backward(outputs, y[i], learning_rate)
+            if validation_data:
+                y_pred = self.predict(X)
+                history["train"].append(accuracy(np.argmax(y, axis=1), np.argmax(y_pred, axis=1)))
+                X_val, y_val = validation_data
+                y_pred = self.predict(X_val)
+                history["val"].append(accuracy(np.argmax(y_val, axis=1), np.argmax(y_pred, axis=1)))
     
     def predict(self, X):
         return [self.forward(x)[-1] for x in X]
