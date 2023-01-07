@@ -11,7 +11,6 @@ def q_learning(env : gym.Env, t_max, gamma, beta, epochs, action_choose_func):
     reward = 0
 
     while epoch < epochs:
-        print("\rEpoch %d/%d"%(epoch+1, epochs), end="")
         t = 0
         state = env.reset()[0]
         is_terminal = False
@@ -35,7 +34,6 @@ def q_learning(env : gym.Env, t_max, gamma, beta, epochs, action_choose_func):
             state = new_state
             t += 1
         epoch += 1
-    print("")
     return Q
 
 def e_greedy_strategy(e):
