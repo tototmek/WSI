@@ -36,8 +36,7 @@ def q_learning(env : gym.Env, t_max, gamma, beta, epochs):
             t += 1
         epoch += 1
     print("")
-    print(Q)
-
+    return Q
 
 def choose_action(env : gym.Env, Q, state):
     e = 0.1
