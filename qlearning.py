@@ -11,8 +11,9 @@ def q_learning(env : gym.Env, t_max, gamma, beta, epochs):
     reward = 0
 
     while epoch < epochs:
+        print("\rEpoch %d/%d"%(epoch+1, epochs), end="")
         t = 0
-        state = env.reset()
+        state = env.reset()[0]
         is_terminal = False
         while t < t_max and not is_terminal:
             # Wybór akcji na podstawie aktualnej strategii
@@ -34,6 +35,8 @@ def q_learning(env : gym.Env, t_max, gamma, beta, epochs):
             state = new_state
             t += 1
         epoch += 1
+    print("")
+    print(Q)
 
 
 def choose_action(env : gym.Env, Q, state):
@@ -43,7 +46,7 @@ def choose_action(env : gym.Env, Q, state):
     else:
         return np.argmax(Q[state, :])
 
-if __name__ == "__main__":
-    env = gym.make("Taxi-v3", render_mode="ansi")
-    #q_learning(env, 15, 0.9, 0.1, 0.5)
+# if __name__ == "__main__":
+#     env = gym.make("Taxi-v3", render_mode="ansi")
+#     q_learning(env, 1000, 0.9, 0.9, 1000)
 
