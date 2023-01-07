@@ -1,7 +1,7 @@
 import numpy as np
 import gym
 
-def q_learning(env : gym.Env, t_max, gamma, beta, epochs):
+def q_learning(env : gym.Env, t_max, gamma, beta, epochs, action_choose_func):
     actions_count = env.action_space.n
     states_count = env.observation_space.n
 
@@ -17,7 +17,7 @@ def q_learning(env : gym.Env, t_max, gamma, beta, epochs):
         is_terminal = False
         while t < t_max and not is_terminal:
             # Wybór akcji na podstawie aktualnej strategii
-            action = choose_action(env, Q, state)
+            action = action_choose_func(env, Q, state)
             # Wykonanie akcji
             new_state, reward, is_terminal, _, _ = env.step(action)
 
@@ -38,14 +38,10 @@ def q_learning(env : gym.Env, t_max, gamma, beta, epochs):
     print("")
     return Q
 
-def choose_action(env : gym.Env, Q, state):
-    e = 0.1
-    if np.random.random() < e:
-        return env.action_space.sample()
-    else:
-        return np.argmax(Q[state, :])
-
-# if __name__ == "__main__":
-#     env = gym.make("Taxi-v3", render_mode="ansi")
-#     q_learning(env, 1000, 0.9, 0.9, 1000)
-
+def e_greedy_strategy(e):
+    def choose_action(env : gym.Env, Q, state):
+        if np.random.random() < e:
+            return env.action_space.sample()
+        else:
+            return np.argmax(Q[state, :])
+    return choose_action
