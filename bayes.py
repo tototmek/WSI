@@ -1,3 +1,5 @@
+import random
+
 probability_table = {
     "T": [
         (None, 0.02)
@@ -6,9 +8,9 @@ probability_table = {
         (None, 0.01)
         ],
     "A": [
-        ([("W", True), ("T", True)], 0.95)
-        ([("W", True), ("T", False)], 0.94)
-        ([("W", False), ("T", True)], 0.29)
+        ([("W", True), ("T", True)], 0.95),
+        ([("W", True), ("T", False)], 0.94),
+        ([("W", False), ("T", True)], 0.29),
         ([("W", False), ("T", False)], 0.001)
         ],
     "J": [
@@ -44,7 +46,7 @@ class BayesNet:
         # Run the MCMC algorithm
         for i in range(iterations):
             for node in self.probability_table:
-                if state[node] is None:
+                if node not in evidence:
                     state[node] = self.sample(node, state)
             if state[query]:
                 counts[query] += 1
@@ -57,8 +59,9 @@ class BayesNet:
 
         # Get the parents of the node
         parents = []
-        for parent, value in probability_table[0][0]:
-            parents.append(parent)
+        if probability_table[0][0] is not None:
+            for parent, value in probability_table[0][0]:
+                parents.append(parent)
 
         # Get the probabilities for the node
         probabilities = []
@@ -88,7 +91,7 @@ if __name__ == "__main__":
     bayes_net = BayesNet(probability_table)
 
     # Run the MCMC algorithm
-    evidence = {"W": True}
+    evidence = {"T": True, "W": False}
     query = "J"
     iterations = 10000
     probability = bayes_net.mcmc(evidence, query, iterations)
