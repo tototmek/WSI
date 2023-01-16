@@ -91,9 +91,9 @@ if __name__ == "__main__":
     bayes_net = BayesNet(probability_table)
 
     # Run the MCMC algorithm
-    evidence = {"T": True, "W": False}
-    query = "J"
-    iterations = 10000
+    evidence = {"A": True}
+    query = "T"
+    iterations = 100000
     probability = bayes_net.mcmc(evidence, query, iterations)
     print(f"P({query}|{evidence}) = {probability}")
 
