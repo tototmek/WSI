@@ -1,27 +1,27 @@
 import random
 
-probability_table = {
-    "T": [
-        (None, 0.02)
-        ],
-    "W": [
-        (None, 0.01)
-        ],
-    "A": [
-        ([("W", True), ("T", True)], 0.95),
-        ([("W", True), ("T", False)], 0.94),
-        ([("W", False), ("T", True)], 0.29),
-        ([("W", False), ("T", False)], 0.001)
-        ],
-    "J": [
-        ([("A", True)], 0.90),
-        ([("A", False)], 0.05)
-    ],
-    "M": [
-        ([("A", True)], 0.70),
-        ([("A", False)], 0.01)
-    ],
-}
+# probability_table = {
+#     "T": [
+#         (None, 0.02)
+#         ],
+#     "W": [
+#         (None, 0.01)
+#         ],
+#     "A": [
+#         ([("W", True), ("T", True)], 0.95),
+#         ([("W", True), ("T", False)], 0.94),
+#         ([("W", False), ("T", True)], 0.29),
+#         ([("W", False), ("T", False)], 0.001)
+#         ],
+#     "J": [
+#         ([("A", True)], 0.90),
+#         ([("A", False)], 0.05)
+#     ],
+#     "M": [
+#         ([("A", True)], 0.70),
+#         ([("A", False)], 0.01)
+#     ],
+# }
 
 class BayesNet:
     def __init__(self, probability_table):
