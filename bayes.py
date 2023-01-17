@@ -54,36 +54,38 @@ class BayesNet:
         return counts[query] / iterations
 
     def sample(self, node, state):
-        # Get the probability table for the node
-        probability_table = self.probability_table[node]
+        p = 0
+        p_true = 0
+        p_false = 0
+        
+        for row in self.probability_table[node]:
+            if row[0] is None:
+                p_true = row[1]
+                p_false = 1 - row[1]
+                break
+            valid = True
+            for parent, value in row[0]:
+                if state[parent] != value:
+                    valid = False
+                    break
+            if valid:
+                p_true = row[1]
+                p_false = 1 - row[1]
 
-        # Get the parents of the node
-        parents = []
-        if probability_table[0][0] is not None:
-            for parent, value in probability_table[0][0]:
-                parents.append(parent)
+        children = []
+        for child in self.probability_table:
+            for row in self.probability_table[child]:
+                if row[0] is None:
+                    continue
+                for parent, value in row[0]:
+                    if parent == node and child not in children:
+                        children.append(child)
 
-        # Get the probabilities for the node
-        probabilities = []
-        for parent_values, probability in probability_table:
-            if parent_values is None:
-                probabilities.append(probability)
-            else:
-                match = True
-                for parent, value in parent_values:
-                    if state[parent] != value:
-                        match = False
-                if match:
-                    probabilities.append(probability)
+        
+        
+        p = p_true / (p_true + p_false)
 
-        # Sample from the probabilities
-        r = random.random()
-        for i in range(len(probabilities)):
-            if r < probabilities[i]:
-                return True
-            else:
-                r -= probabilities[i]
-        return False
+        return random.random() < p
 
 if __name__ == "__main__":
 
@@ -91,8 +93,18 @@ if __name__ == "__main__":
     bayes_net = BayesNet(probability_table)
 
     # Run the MCMC algorithm
+    evidence = {}
+    query = "W"
+    iterations = 100000
+    probability = bayes_net.mcmc(evidence, query, iterations)
+    print(f"P({query}|{evidence}) = {probability}")
     evidence = {"A": True}
     query = "W"
+    iterations = 100000
+    probability = bayes_net.mcmc(evidence, query, iterations)
+    print(f"P({query}|{evidence}) = {probability}")
+    evidence = {"A": True}
+    query = "J"
     iterations = 100000
     probability = bayes_net.mcmc(evidence, query, iterations)
     print(f"P({query}|{evidence}) = {probability}")
