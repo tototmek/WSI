@@ -60,31 +60,28 @@ class BayesNet:
                     return row[1] if to_value else 1 - row[1]
         return 0
     
-    def get_parental_probability(self, node, state):
+    def get_parental_probability(self, node, node_value, state):
+        result = 1
         for row in self.probability_table[node]:
             if row[0] is None:
-                return row[1]
+                result = row[1]
+                break
             valid = True
             for parent, value in row[0]:
                 if state[parent] != value:
                     valid = False
                     break
             if valid:
-                return row[1]
-        return 0
+                result = row[1]
+                break
+        return result if node_value else 1 - result
 
-    def sample(self, node, state):
-        p = self.get_parental_probability(node, state)
-
-            
-        return random.random() < p
-        
     def mcmc(self, evidence, query, iterations):
 
         # Initialize the state of the network
         state = {}
         for node in self.probability_table:
-            state[node] = None
+            state[node] = random.choice([True, False])
 
         # Set the evidence
         for node, value in evidence.items():
@@ -97,14 +94,50 @@ class BayesNet:
 
         # Run the MCMC algorithm
         for i in range(iterations):
-            node = self.get_random_node()
-            if node not in evidence:
+            # node = self.get_random_node()
+            # if node not in evidence:
+            #     state[node] = self.sample(node, state)
+            for node in self.probability_table:
+                if node in evidence:
+                    continue
                 state[node] = self.sample(node, state)
-            if state[query]:
-                counts[query] += 1
+            if i > iterations * 0.2:
+                if state[query]:
+                    counts[query] += 1
 
-        return counts[query] / iterations
+        return counts[query] / (iterations * 0.8)
 
+    def sample(self, node, state):
+        new_state = state.copy()
+        p_true = self.get_parental_probability(node, True, new_state)
+        p_false = 1 - p_true
+
+        children = self.get_node_children(node)
+
+        markov_blanket = []
+        for child in children:
+            markov_blanket.append(child)
+            for parent in self.get_node_parents(child):
+                if parent not in markov_blanket:
+                    markov_blanket.append(parent)
+
+        for mb_node in markov_blanket:
+            if mb_node == node:
+                continue
+            p_true *= self.get_parental_probability(mb_node, state[mb_node], state)
+            p_false *= self.get_parental_probability(mb_node, state[mb_node], state)
+
+        new_state[node] = True
+        for child in self.get_node_children(node):
+            p_true *= self.get_parental_probability(child, new_state[child], new_state)
+        
+        new_state[node] = False
+        for child in self.get_node_children(node):
+            p_false *= self.get_parental_probability(child, new_state[child], new_state)
+
+        return p_true / (p_true + p_false) > random.random()
+
+         
 
 
 
@@ -113,20 +146,6 @@ if __name__ == "__main__":
     # Create the Bayes net
     bayes_net = BayesNet(probability_table)
 
-
-    evidence = {"J": True, "M": True}
-    query = "A"
-    print(f"P({query}|{evidence}) = ", bayes_net.mcmc(evidence, query, 100000))
-
-    evidence = {}
+    evidence = {"A": True, "T": True}
     query = "W"
     print(f"P({query}|{evidence}) = ", bayes_net.mcmc(evidence, query, 100000))
-
-    evidence = {"T": True, "W": False}
-    query = "A"
-    print(f"P({query}|{evidence}) = ", bayes_net.mcmc(evidence, query, 100000))
-
-    evidence = {"A": True}
-    query = "J"
-    print(f"P({query}|{evidence}) = ", bayes_net.mcmc(evidence, query, 100000))
-
