@@ -118,22 +118,18 @@ class BayesNet:
         for child in children:
             markov_blanket.append(child)
             for parent in self.get_node_parents(child):
+                if parent == node:
+                    continue
                 if parent not in markov_blanket:
                     markov_blanket.append(parent)
 
-        for mb_node in markov_blanket:
-            if mb_node == node:
-                continue
-            p_true *= self.get_parental_probability(mb_node, state[mb_node], state)
-            p_false *= self.get_parental_probability(mb_node, state[mb_node], state)
-
         new_state[node] = True
-        for child in self.get_node_children(node):
-            p_true *= self.get_parental_probability(child, new_state[child], new_state)
+        for mb_node in markov_blanket:
+            p_true *= self.get_parental_probability(mb_node, new_state[mb_node], new_state)
         
         new_state[node] = False
-        for child in self.get_node_children(node):
-            p_false *= self.get_parental_probability(child, new_state[child], new_state)
+        for mb_node in markov_blanket:
+            p_false *= self.get_parental_probability(mb_node, new_state[mb_node], new_state)
 
         return p_true / (p_true + p_false) > random.random()
 
@@ -146,6 +142,6 @@ if __name__ == "__main__":
     # Create the Bayes net
     bayes_net = BayesNet(probability_table)
 
-    evidence = {"A": True, "T": True}
+    evidence = {"A": True}
     query = "W"
     print(f"P({query}|{evidence}) = ", bayes_net.mcmc(evidence, query, 100000))
