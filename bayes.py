@@ -1,4 +1,5 @@
 import random
+import time
 
 probability_table = {
     "T": [
@@ -26,6 +27,7 @@ probability_table = {
 class BayesNet:
     def __init__(self, probability_table):
         self.probability_table = probability_table
+        self.history = {}
 
     def get_random_node(self):
         return random.choice(list(self.probability_table.keys()))
@@ -78,6 +80,12 @@ class BayesNet:
 
     def mcmc(self, evidence, query, iterations):
 
+        self.history = {}
+        self.history["time"] = []
+        self.history["probability"] = []
+
+        start_time = time.time()
+
         # Initialize the state of the network
         state = {}
         for node in self.probability_table:
@@ -101,11 +109,12 @@ class BayesNet:
                 if node in evidence:
                     continue
                 state[node] = self.sample(node, state)
-            if i > iterations * 0.2:
-                if state[query]:
-                    counts[query] += 1
+            if state[query]:
+                counts[query] += 1
+            self.history["time"].append(time.time() - start_time)
+            self.history["probability"].append(counts[query] / (i+1))
 
-        return counts[query] / (iterations * 0.8)
+        return counts[query] / iterations
 
     def sample(self, node, state):
         new_state = state.copy()
