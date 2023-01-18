@@ -1,29 +1,6 @@
 import random
 import time
 
-probability_table = {
-    "T": [
-        (None, 0.02)
-        ],
-    "W": [
-        (None, 0.01)
-        ],
-    "A": [
-        ([("W", True), ("T", True)], 0.95),
-        ([("W", True), ("T", False)], 0.94),
-        ([("W", False), ("T", True)], 0.29),
-        ([("W", False), ("T", False)], 0.001)
-        ],
-    "J": [
-        ([("A", True)], 0.90),
-        ([("A", False)], 0.05)
-    ],
-    "M": [
-        ([("A", True)], 0.70),
-        ([("A", False)], 0.01)
-    ],
-}
-
 class BayesNet:
     def __init__(self, probability_table):
         self.probability_table = probability_table
@@ -42,6 +19,7 @@ class BayesNet:
                     parents.append(parent)
         return parents
     
+    # Returns a list of all the children of a node
     def get_node_children(self, node):
         children = []
         for child in self.probability_table:
@@ -52,16 +30,8 @@ class BayesNet:
                     if parent == node and child not in children:
                         children.append(child)
         return children
-
-    def get_probalility_node_to_node(self, from_node, from_value, to_node, to_value):
-        for row in self.probability_table[to_node]:
-            if row[0] is None:
-                continue
-            for parent, value in row[0]:
-                if parent == from_node and value == from_value:
-                    return row[1] if to_value else 1 - row[1]
-        return 0
     
+    # Returns the probability of a node given its parents
     def get_parental_probability(self, node, node_value, state):
         result = 1
         for row in self.probability_table[node]:
@@ -116,8 +86,10 @@ class BayesNet:
 
         return counts[query] / iterations
 
+    # Gibbs sampling
     def sample(self, node, state):
         new_state = state.copy()
+        
         p_true = self.get_parental_probability(node, True, new_state)
         p_false = 1 - p_true
 
@@ -141,16 +113,3 @@ class BayesNet:
             p_false *= self.get_parental_probability(mb_node, new_state[mb_node], new_state)
 
         return p_true / (p_true + p_false) > random.random()
-
-         
-
-
-
-if __name__ == "__main__":
-
-    # Create the Bayes net
-    bayes_net = BayesNet(probability_table)
-
-    evidence = {"A": True}
-    query = "W"
-    print(f"P({query}|{evidence}) = ", bayes_net.mcmc(evidence, query, 100000))
